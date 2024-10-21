@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+[data-theme="light"] {
+	--color-bg: #e8e3d5;
+	--color-fg: #989690;
+}
+
+[data-theme="dark"] {
+	--color-bg: #191922;
+	--color-fg: #989690;
+}
+
+.blob-path {
+	filter: url(#blurFilter);
+}
+.blob-path-0 {
+	animation: rotateBlob 20s linear infinite;
+}
+.blob-path-1 {
+	animation: rotateBlob 25s linear infinite reverse;
+}
+.blob-image {
+	filter: url(#blendFilter);
+}
+@keyframes rotateBlob {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+.theme-transition,
+.theme-transition *,
+.theme-transition *:before,
+.theme-transition *:after {
+	transition: all 0.3s ease-in-out !important;
+	transition-delay: 0 !important;
+}
+
+.theme-switch {
+	position: relative;
+	overflow: visible;
+	border-radius: 20px;
+	transition: none;
+}
+
+.theme-switch::before {
+	filter: blur(10px);
+	content: "";
+	position: absolute;
+	top: -5px;
+	left: -5px;
+	right: -5px;
+	bottom: -5px;
+	background: var(--color-fg);
+	border-radius: inherit;
+	opacity: 0;
+	transition: opacity 0.1s ease-in-out;
+	z-index: -1;
+}
+
+.theme-switch:hover::before {
+	opacity: 1;
+}
+
+.theme-switch svg {
+	position: relative;
+	z-index: 2;
+	transition: all 0.2s ease-in-out;
+}
+
+.theme-switch svg * {
+	transition: all 0.2s ease-in-out;
+}
+
+.theme-switch:hover svg * {
+	stroke: #e8e3d5;
+	transition: none;
+}
