@@ -87,42 +87,6 @@ const TrackBlobs = React.memo(
 			));
 		}, [baseTrackImagePath, mixinTrackImagePath]);
 
-		const overlapMask = useMemo(() => {
-			return (
-				<mask id="overlapMask">
-					<rect x="-200" y="-200" width="400" height="400" fill="white" />
-					<path
-						d={animatedPath1}
-						fill="black"
-						transform="translate(-48, -38)"
-					/>
-					<path d={animatedPath2} fill="black" transform="translate(48, 38)" />
-				</mask>
-			);
-		}, [animatedPath1, animatedPath2]);
-
-		//   return (
-		//     <svg
-		//       viewBox="-200 -200 400 400"
-		//       xmlns="http://www.w3.org/2000/svg"
-		//       style={style}
-		//     >
-		//       <title>Track Blobs</title>
-		//       <defs>
-		//         <filter id="blendFilter">
-		//           <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
-		//           <feColorMatrix
-		//             in="blur"
-		//             type="matrix"
-		//             values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
-		//             result="goo"
-		//           />
-		//           <feComposite in="SourceGraphic" in2="goo" operator="atop" />
-		//         </filter>
-		// <filter id="blendOverlap">
-		//   <feBlend mode="multiply" in="SourceGraphic" in2="BackgroundImage" />
-		// </filter>
-
 		return (
 			<svg
 				viewBox="-200 -200 400 400"
