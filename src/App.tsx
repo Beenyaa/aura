@@ -64,10 +64,10 @@ const App = () => {
 					backdropFilter: "blur(10px)",
 					zIndex: 100,
 					position: "relative",
-					width: "60%", // Reduced from 80%
-					height: "60%", // Reduced from 80%
-					maxWidth: "600px", // Reduced from 800px
-					maxHeight: "600px", // Reduced from 800px
+					width: "60%",
+					height: "60%",
+					maxWidth: "600px",
+					maxHeight: "600px",
 				}}
 			>
 				<TrackBlobs
