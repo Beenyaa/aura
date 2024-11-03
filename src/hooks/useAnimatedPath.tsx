@@ -1,30 +1,33 @@
 import { useRef, useCallback } from "react";
 
-// Pre-compile regex pattern
-const PATH_COMMAND_REGEX = /[A-Z][^A-Z]*/g;
+// Pre-compile regex pattern - now handles commands and values separately
+const PATH_COMMAND_REGEX = /([MLHVCSQTAZ])([^MLHVCSQTAZ]*)/g;
 
 interface ParsedPath {
 	commands: string[];
-	numbers: number[][];
+	values: number[][];
 }
 
-// Use regular Map instead of WeakMap for string keys
 const pathCache = new Map<string, ParsedPath>();
 
 function parsePath(path: string): ParsedPath {
-	if (typeof path !== "string") return { commands: [], numbers: [] };
+	if (typeof path !== "string") return { commands: [], values: [] };
 
 	const cached = pathCache.get(path);
 	if (cached) return cached;
 
-	const commands = path.match(PATH_COMMAND_REGEX) || [];
-	const numbers = commands.map((cmd) =>
-		cmd.slice(1).trim().split(/[ ,]+/).map(Number),
+	const matches = Array.from(path.matchAll(PATH_COMMAND_REGEX) || []);
+	const commands = matches.map((match) => match[1]);
+	const values = matches.map((match) =>
+		match[2]
+			.trim()
+			.split(/[,\s]+/)
+			.filter(Boolean)
+			.map(Number),
 	);
 
-	const parsed = { commands, numbers };
+	const parsed = { commands, values };
 
-	// Limit cache size to prevent memory leaks
 	if (pathCache.size > 100) {
 		const entries = Array.from(pathCache.keys());
 		for (const entry of entries.slice(0, 50)) {
@@ -41,23 +44,26 @@ function interpolatePath(
 	pathBData: ParsedPath,
 	progress: number,
 ): string {
-	const { commands: commandsA, numbers: numbersA } = pathAData;
-	const { numbers: numbersB } = pathBData;
+	const { commands: commandsA, values: valuesA } = pathAData;
+	const { values: valuesB } = pathBData;
 
 	let result = "";
 
 	for (let i = 0; i < commandsA.length; i++) {
-		const cmdA = commandsA[i];
-		const numsA = numbersA[i];
-		const numsB = numbersB[i] || numsA;
+		const numsA = valuesA[i];
+		const numsB = valuesB[i] || numsA;
 
-		result += cmdA[0];
+		// Build the interpolated values string
+		const interpolatedValues = numsA
+			.map((numA, j) => {
+				const numB = numsB[j] || numA;
+				const interpolatedValue = numA + (numB - numA) * progress;
+				return interpolatedValue.toFixed(2);
+			})
+			.join(" ");
 
-		for (let j = 0; j < numsA.length; j++) {
-			const numA = numsA[j];
-			const numB = numsB[j] || numA;
-			result += (j === 0 ? "" : " ") + (numA + (numB - numA) * progress);
-		}
+		// Use template literal to combine command and values
+		result += `${commandsA[i]} ${interpolatedValues}`;
 	}
 
 	return result;
@@ -68,16 +74,13 @@ export function useAnimatedPath(
 	targetPath: string,
 	duration: number,
 ) {
-	// Use refs to avoid recreating objects on each render
 	const pathRef = useRef({ current: initialPath });
 	const frameRef = useRef<number>();
 	const startTimeRef = useRef<number>();
 
-	// Parse paths once and cache them
 	const initialPathData = useRef(parsePath(initialPath));
 	const targetPathData = useRef(parsePath(targetPath));
 
-	// Create a stable callback for the animation frame
 	const animate = useCallback(
 		(timestamp: number) => {
 			if (!startTimeRef.current) {
@@ -100,7 +103,6 @@ export function useAnimatedPath(
 		[duration],
 	);
 
-	// Clean up animation when paths change
 	if (pathRef.current.current !== targetPath) {
 		if (frameRef.current) {
 			cancelAnimationFrame(frameRef.current);
